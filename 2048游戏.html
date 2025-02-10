@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <style>
+        body {
+            font-family: 'avenir', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 60px);
+            grid-template-rows: repeat(4, 60px);
+            gap: 6px;
+            background-color: #FFE2B5;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #eee;
+            color: #333;
+            font-size: 24px;
+            border-radius: 10px;
+        }
+
+        .grid .empty {
+            background-color: #ccc;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            background-color: #f57c00;
+            color: #ffffff;
+            font-size: 10px;
+            margin: 3px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .button-container button:hover {
+            background-color: #fb8c00;
+            transform: scale(1.05);
+        }
+
+        .tile-2 {
+            background-color: #eee4da;
+            color: #333;
+        }
+
+        .tile-4 {
+            background-color: #ede0c8;
+            color: #333;
+        }
+
+        .tile-8 {
+            background-color: #f2b179;
+            color: #f9f6f2;
+        }
+
+        .tile-16 {
+            background-color: #f59563;
+            color: #f9f6f2;
+        }
+
+        .tile-32 {
+            background-color: #f67c5f;
+            color: #f9f6f2;
+        }
+
+        .tile-64 {
+            background-color: #f65e3b;
+            color: #f9f6f2;
+        }
+
+        .tile-128 {
+            background-color: #edcf72;
+            color: #f9f6f2;
+        }
+
+        .tile-256 {
+            background-color: #edcc61;
+            color: #f9f6f2;
+        }
+
+        .tile-512 {
+            background-color: #edc850;
+            color: #f9f6f2;
+        }
+
+        .tile-1024 {
+            background-color: #edc53f;
+            color: #f9f6f2;
+        }
+
+        .tile-2048 {
+            background-color: #edc22e;
+            color: #f9f6f2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 style="color: #333; font-size: 1.5em;">2048 Game</h1>
+        <div class="grid">
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+        </div>
+        <div class="button-container">
+            <button onclick="move('up')">Up</button>
+            <button onclick="move('left')">Left</button>
+            <button onclick="move('down')">Down</button>
+            <button onclick="move('right')">Right</button>
+        </div>
+    </div>
+
+    <script>
+        const grid = Array.from({ length: 4 }, () => Array(4).fill(0));
+
+        function addRandomTile() {
+            const emptyCells = [];
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) {
+                        emptyCells.push([i, j]);
+                    }
+                }
+            }
+            if (emptyCells.length === 0) return;
+            const [row, col] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            grid[row][col] = Math.random() < 0.9 ? 2 : 4;
+        }
+
+        function render() {
+            const cellElements = document.querySelectorAll('.cell');
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = grid[i][j];
+                    const cell = cellElements[i * 4 + j];
+                    if (value === 0) {
+                        cell.className = 'cell empty';
+                        cell.textContent = '';
+                    } else {
+                        cell.className = `cell tile-${value}`;
+                        cell.textContent = value;
+                    }
+                }
+            }
+        }
+
+        function move(direction) {
+            let moved = false;
+            switch (direction) {
+                case 'up':
+                    for (let col = 0; col < 4; col++) {
+                        let values = [];
+                        for (let row = 0; row < 4; row++) {
+                            if (grid[row][col] !== 0) values.push(grid[row][col]);
+                        }
+                        values = mergeCells(values);
+                        for (let row = 0; row < 4; row++) {
+                            if (grid[row][col] !== values[row] || values[row] === undefined) moved = true;
+                            grid[row][col] = values[row] || 0;
+                        }
+                    }
+                    break;
+                case 'down':
+                    for (let col = 0; col < 4; col++) {
+                        let values = [];
+                        for (let row = 3; row >= 0; row--) {
+                            if (grid[row][col] !== 0) values.push(grid[row][col]);
+                        }
+                        values = mergeCells(values);
+                        for (let row = 0; row < 4; row++) {
+                            if (grid[3 - row][col] !== values[row] || values[row] === undefined) moved = true;
+                            grid[3 - row][col] = values[row] || 0;
+                        }
+                    }
+                    break;
+                case 'left':
+                    for (let row = 0; row < 4; row++) {
+                        let values = [];
+                        for (let col = 0; col < 4; col++) {
+                            if (grid[row][col] !== 0) values.push(grid[row][col]);
+                        }
+                        values = mergeCells(values);
+                        for (let col = 0; col < 4; col++) {
+                            if (grid[row][col] !== values[col] || values[col] === undefined) moved = true;
+                            grid[row][col] = values[col] || 0;
+                        }
+                    }
+                    break;
+                case 'right':
+                    for (let row = 0; row < 4; row++) {
+                        let values = [];
+                        for (let col = 3; col >= 0; col--) {
+                            if (grid[row][col] !== 0) values.push(grid[row][col]);
+                        }
+                        values = mergeCells(values);
+                        for (let col = 0; col < 4; col++) {
+                            if (grid[row][3 - col] !== values[col] || values[col] === undefined) moved = true;
+                            grid[row][3 - col] = values[col] || 0;
+                        }
+                    }
+                    break;
+            }
+            if (moved) {
+                addRandomTile();
+                render();
+                if (checkGameOver()) {
+                    alert('Game Over');
+                }
+            }
+        }
+
+        function mergeCells(values) {
+            values = values.filter(val => val !== 0);
+            for (let i = 0; i < values.length - 1; i++) {
+                if (values[i] === values[i + 1]) {
+                    values[i] *= 2;
+                    values[i + 1] = 0;
+                }
+            }
+            return values.filter(val => val !== 0);
+        }
+
+        function checkGameOver() {
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) return false;
+                    if (j < 3 && grid[i][j] === grid[i][j + 1]) return false;
+                    if (i < 3 && grid[i][j] === grid[i + 1][j]) return false;
+                }
+            }
+            return true;
+        }
+
+        function init() {
+            addRandomTile();
+            addRandomTile();
+            render();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
